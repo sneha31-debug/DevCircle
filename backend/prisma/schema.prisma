@@ -1,0 +1,237 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum Role {
+  MEMBER
+  MODERATOR
+  ADMIN
+}
+
+enum PostType {
+  QUESTION
+  ARTICLE
+  POLL
+}
+
+enum NotificationType {
+  NEW_COMMENT
+  NEW_VOTE
+  MENTION
+  ANSWER_ACCEPTED
+}
+
+enum VoteTargetType {
+  POST
+  COMMENT
+}
+
+// ─── Models ───────────────────────────────────────────────────────────────────
+
+model User {
+  id              String    @id @default(uuid())
+  username        String    @unique
+  email           String    @unique
+  passwordHash    String
+  bio             String?
+  avatarUrl       String?
+  reputationScore Int       @default(0)
+  role            Role      @default(MEMBER)
+  isBanned        Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  moderatedCommunities Community[]         @relation("CommunityModerator")
+  communityMemberships CommunityMember[]
+  posts                Post[]
+  comments             Comment[]
+  votes                Vote[]
+  pollVotes            PollVote[]
+  notifications        Notification[]       @relation("NotificationRecipient")
+  auditLogs            AuditLog[]
+
+  @@map("users")
+}
+
+model Community {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  description String?
+  moderatorId String
+  memberCount Int       @default(0)
+  createdAt   DateTime  @default(now())
+
+  // Relations
+  moderator   User              @relation("CommunityModerator", fields: [moderatorId], references: [id])
+  members     CommunityMember[]
+  posts       Post[]
+
+  @@map("communities")
+}
+
+model CommunityMember {
+  userId      String
+  communityId String
+  joinedAt    DateTime @default(now())
+
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  community   Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+
+  @@id([userId, communityId])
+  @@map("community_members")
+}
+
+model Post {
+  id                String    @id @default(uuid())
+  title             String
+  body              String
+  type              PostType
+  authorId          String
+  communityId       String
+  upvotes           Int       @default(0)
+  downvotes         Int       @default(0)
+  isAnswered        Boolean   @default(false)
+  acceptedCommentId String?
+  readTimeMinutes   Int?
+  expiresAt         DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  // Relations
+  author      User          @relation(fields: [authorId], references: [id])
+  community   Community     @relation(fields: [communityId], references: [id])
+  tags        PostTag[]
+  comments    Comment[]
+  votes       Vote[]
+  pollOptions PollOption[]
+
+  @@index([communityId])
+  @@index([authorId])
+  @@map("posts")
+}
+
+model PollOption {
+  id         String     @id @default(uuid())
+  postId     String
+  optionText String
+  voteCount  Int        @default(0)
+
+  post       Post       @relation(fields: [postId], references: [id], onDelete: Cascade)
+  pollVotes  PollVote[]
+
+  @@map("poll_options")
+}
+
+model PollVote {
+  id       String   @id @default(uuid())
+  postId   String
+  userId   String
+  optionId String
+  votedAt  DateTime @default(now())
+
+  user     User       @relation(fields: [userId], references: [id])
+  option   PollOption @relation(fields: [optionId], references: [id])
+
+  @@unique([postId, userId])
+  @@map("poll_votes")
+}
+
+model Tag {
+  id         String    @id @default(uuid())
+  name       String    @unique
+  usageCount Int       @default(0)
+
+  posts      PostTag[]
+
+  @@map("tags")
+}
+
+model PostTag {
+  postId String
+  tagId  String
+
+  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tag    Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([postId, tagId])
+  @@map("post_tags")
+}
+
+model Comment {
+  id              String    @id @default(uuid())
+  postId          String
+  authorId        String
+  parentCommentId String?
+  body            String
+  upvotes         Int       @default(0)
+  downvotes       Int       @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  post            Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author          User      @relation(fields: [authorId], references: [id])
+  parentComment   Comment?  @relation("CommentReplies", fields: [parentCommentId], references: [id])
+  replies         Comment[] @relation("CommentReplies")
+  votes           Vote[]
+
+  @@index([postId])
+  @@map("comments")
+}
+
+model Vote {
+  id         String         @id @default(uuid())
+  voterId    String
+  targetId   String
+  targetType VoteTargetType
+  value      Int            // 1 or -1
+  postId     String?
+  commentId  String?
+  createdAt  DateTime       @default(now())
+
+  voter      User     @relation(fields: [voterId], references: [id])
+  post       Post?    @relation(fields: [postId], references: [id], onDelete: Cascade)
+  comment    Comment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@unique([voterId, targetId, targetType])
+  @@map("votes")
+}
+
+model Notification {
+  id          String           @id @default(uuid())
+  recipientId String
+  type        NotificationType
+  message     String
+  referenceId String?
+  isRead      Boolean          @default(false)
+  createdAt   DateTime         @default(now())
+
+  recipient   User @relation("NotificationRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+
+  @@index([recipientId, isRead])
+  @@map("notifications")
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  actorId    String
+  action     String
+  targetType String
+  targetId   String
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  actor      User @relation(fields: [actorId], references: [id])
+
+  @@map("audit_logs")
+}
