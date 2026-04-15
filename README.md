@@ -58,3 +58,5 @@ npm run dev
 | GET | /api/notifications | Get notifications |
 
 <!-- last updated: April 2025 -->
+
+<!-- last updated: April 2026 -->
