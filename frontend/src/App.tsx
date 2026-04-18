@@ -1,12 +1,12 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import Navbar from './components/layout/Navbar';
+import NotificationToast from './components/common/NotificationToast';
 
-// Placeholder Pages (will be implemented next)
-const FeedPage = () => <div className="container animate-fade-in" style={{marginTop: '80px'}}><h2>Discover Feed</h2><p>Posts will appear here.</p></div>;
-const AuthPage = () => <div className="container animate-fade-in" style={{marginTop: '80px'}}><h2>Login / Register</h2></div>;
-const PostDetailPage = () => <div className="container animate-fade-in" style={{marginTop: '80px'}}><h2>Post Detail</h2></div>;
-const CommunityPage = () => <div className="container animate-fade-in" style={{marginTop: '80px'}}><h2>Community</h2></div>;
+import FeedPage from './pages/FeedPage';
+import AuthPage from './pages/AuthPage';
+import PostDetailPage from './pages/PostDetailPage';
+import CommunityPage from './pages/CommunityPage';
 
 function App() {
   return (
@@ -14,6 +14,7 @@ function App() {
       <AuthProvider>
         <div className="app-wrapper">
           <Navbar />
+          <NotificationToast />
           <main>
             <Routes>
               <Route path="/" element={<Navigate to="/feed" replace />} />
