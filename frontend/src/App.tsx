@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import Navbar from './components/layout/Navbar';
-import NotificationToast from './components/common/NotificationToast';
+
 
 import FeedPage from './pages/FeedPage';
 import AuthPage from './pages/AuthPage';
@@ -12,13 +12,14 @@ import CreatePostPage from './pages/CreatePostPage';
 import CreateCommunityPage from './pages/CreateCommunityPage';
 import SearchPage from './pages/SearchPage';
 
+
 function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
         <div className="app-wrapper">
           <Navbar />
-          <NotificationToast />
+
           <main>
             <Routes>
               <Route path="/" element={<Navigate to="/feed" replace />} />
@@ -30,6 +31,7 @@ function App() {
               <Route path="/submit" element={<CreatePostPage />} />
               <Route path="/create-community" element={<CreateCommunityPage />} />
               <Route path="/search" element={<SearchPage />} />
+
               {/* Fallback */}
               <Route path="*" element={<div className="container animate-fade-in" style={{marginTop: '80px'}}><h2>404 Not Found</h2></div>} />
             </Routes>

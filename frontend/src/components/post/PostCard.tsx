@@ -103,7 +103,9 @@ const PostCard: React.FC<PostCardProps> = ({ post, onVote, onPollVote }) => {
             c/{post.community.name}
           </Link>
           <span className="meta-divider">•</span>
-          <span className="meta-author">Posted by u/{post.author.username} ({post.author.reputationScore})</span>
+          <Link to={`/u/${post.author.username}`} className="meta-author">
+            Posted by u/{post.author.username} ({post.author.reputationScore})
+          </Link>
           <span className="meta-divider">•</span>
           <span className="meta-time">{format(post.createdAt)}</span>
           {renderBadge()}

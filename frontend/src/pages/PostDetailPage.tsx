@@ -119,7 +119,7 @@ const PostDetailPage: React.FC = () => {
     return commentList.map((comment) => (
       <div key={comment.id} className={`comment-thread depth-${depth}`}>
         <div className="comment-meta">
-          <span className="comment-author">u/{comment.author.username}</span>
+          <Link to={`/u/${comment.author.username}`} className="comment-author">u/{comment.author.username}</Link>
           <span className="meta-divider">•</span>
           <span className="comment-time">{format(comment.createdAt)}</span>
         </div>
@@ -171,7 +171,7 @@ const PostDetailPage: React.FC = () => {
           <div className="post-meta">
             <Link to={`/c/${post.community.name}`} className="meta-community">c/{post.community.name}</Link>
             <span className="meta-divider">•</span>
-            <span className="meta-author">Posted by u/{post.author.username}</span>
+            <Link to={`/u/${post.author.username}`} className="meta-author">Posted by u/{post.author.username}</Link>
             <span className="meta-divider">•</span>
             <span className="meta-time">{format(post.createdAt)}</span>
           </div>

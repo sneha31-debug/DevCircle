@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FiSearch, FiBell, FiUser, FiLogOut, FiMenu, FiUsers } from 'react-icons/fi';
+import { FiSearch, FiUser, FiLogOut, FiMenu, FiUsers } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
 import './Navbar.css';
 
@@ -47,12 +47,7 @@ const Navbar: React.FC = () => {
         <div className="navbar-actions">
           {user ? (
             <>
-              <button className="icon-btn" title="Notifications">
-                <FiBell />
-                {/* Note: Notification badge logic would bind to EventBus / Sockets here */}
-                <span className="notification-dot animate-pulse"></span>
-              </button>
-              
+
               <div className="user-menu-wrapper">
                 <button className="user-avatar">
                   {user.username.charAt(0).toUpperCase()}

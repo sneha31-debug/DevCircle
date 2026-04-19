@@ -1,0 +1,105 @@
+.members-header {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  border-radius: var(--radius-lg);
+}
+
+.members-header .header-icon {
+  font-size: 3rem;
+  color: var(--primary);
+  padding: 1rem;
+  background: rgba(82, 113, 255, 0.1);
+  border-radius: 50%;
+}
+
+.members-header h1 {
+  margin: 0 0 0.5rem 0;
+}
+
+.members-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.member-card {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 1.5rem;
+  text-decoration: none;
+  color: inherit;
+  transition: all var(--transition-fast);
+}
+
+.member-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+  text-decoration: none;
+}
+
+.member-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(82, 113, 255, 0.2), rgba(255, 62, 165, 0.2));
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.75rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  border: 2px solid rgba(255, 255, 255, 0.05);
+}
+
+.member-avatar img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.member-info h3 {
+  margin: 0 0 0.25rem 0;
+  font-size: 1.15rem;
+  color: var(--text);
+}
+
+.role-badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 0.15rem 0.5rem;
+  border-radius: 12px;
+  background: var(--bg-surface-elevated);
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.role-badge.admin {
+  background: rgba(255, 62, 165, 0.15);
+  color: #ff3ea5;
+}
+
+.role-badge.moderator {
+  background: rgba(82, 113, 255, 0.15);
+  color: #5271ff;
+}
+
+.member-stats {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.member-stats span {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
