@@ -23,17 +23,21 @@ class VoteService {
       authorId = comment?.authorId;
     }
 
+    let upDelta = 0;
+    let downDelta = 0;
+
     if (existing) {
       if (existing.value === value) {
         // Toggle: same vote again = remove
         await VoteRepository.delete(existing.id);
         delta = -value;
-        await this._updateCount(targetId, targetType, -value);
+        if (value === 1) upDelta = -1; else downDelta = -1;
       } else {
-        // Change vote direction
+        // Change vote direction definition (e.g. 1 -> -1)
         await VoteRepository.update(existing.id, { value });
-        delta = value * 2; // e.g., -1 → +1 = +2 reputation
-        await this._updateCount(targetId, targetType, value * 2);
+        delta = value * 2; // -1 → +1 = +2 reputation
+        if (value === 1) { upDelta = 1; downDelta = -1; }
+        else { upDelta = -1; downDelta = 1; }
       }
     } else {
       const voteData = { voterId, targetId, targetType, value };
@@ -41,7 +45,24 @@ class VoteService {
       if (targetType === 'COMMENT') voteData.commentId = targetId;
       await VoteRepository.save(voteData);
       delta = value;
-      await this._updateCount(targetId, targetType, value);
+      if (value === 1) upDelta = 1; else downDelta = 1;
+    }
+
+    // Safely update the tables directly instead of _updateCount which was mathematically flawed
+    let upvotesNew = 0;
+    let downvotesNew = 0;
+    if (targetType === 'POST') {
+      const updated = await prisma.post.update({
+        where: { id: targetId },
+        data: { upvotes: { increment: upDelta }, downvotes: { increment: downDelta } }
+      });
+      upvotesNew = updated.upvotes;
+      downvotesNew = updated.downvotes;
+    } else {
+      await prisma.comment.update({
+        where: { id: targetId },
+        data: { upvotes: { increment: upDelta }, downvotes: { increment: downDelta } }
+      });
     }
 
     // Update reputation
@@ -57,17 +78,25 @@ class VoteService {
       });
     }
 
-    return { success: true, delta };
+    return { success: true, delta, upvotes: upvotesNew, downvotes: downvotesNew };
   }
 
-  async _updateCount(targetId, targetType, delta) {
-    if (targetType === 'POST') {
-      const field = delta > 0 ? 'upvotes' : 'downvotes';
-      await prisma.post.update({ where: { id: targetId }, data: { [field]: { increment: Math.abs(delta) } } });
-    } else {
-      const field = delta > 0 ? 'upvotes' : 'downvotes';
-      await prisma.comment.update({ where: { id: targetId }, data: { [field]: { increment: Math.abs(delta) } } });
-    }
+  async castPollVote(voterId, postId, optionId) {
+    const existing = await prisma.pollVote.findUnique({
+      where: { postId_userId: { postId, userId: voterId } }
+    });
+    if (existing) throw Object.assign(new Error('You have already voted on this poll.'), { status: 409 });
+
+    await prisma.pollVote.create({
+      data: { postId, userId: voterId, optionId }
+    });
+
+    await prisma.pollOption.update({
+      where: { id: optionId },
+      data: { voteCount: { increment: 1 } }
+    });
+
+    return { success: true };
   }
 }
 

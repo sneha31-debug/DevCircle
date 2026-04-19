@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import api from '../services/api';
 import PostCard, { type Post } from '../components/post/PostCard';
 import { FiUser, FiStar, FiCalendar, FiFileText } from 'react-icons/fi';
@@ -15,6 +15,7 @@ interface UserProfile {
   reputationScore: number;
   role: string;
   createdAt: string;
+  communityMemberships?: { community: { id: string; name: string } }[];
 }
 
 const ProfilePage: React.FC = () => {
@@ -44,14 +45,15 @@ const ProfilePage: React.FC = () => {
 
   const handleVote = async (postId: string, type: 'UPVOTE' | 'DOWNVOTE') => {
     try {
-      await api.post(`/posts/${postId}/vote`, { type });
+      const response = await api.post(`/posts/${postId}/vote`, { value: type === 'UPVOTE' ? 1 : -1 });
+      const { upvotes, downvotes } = response.data.data;
       setPosts((currentPosts) => 
         currentPosts.map((p) => {
           if (p.id === postId) {
             return {
               ...p,
-              upvotes: type === 'UPVOTE' ? p.upvotes + 1 : p.upvotes,
-              downvotes: type === 'DOWNVOTE' ? p.downvotes + 1 : p.downvotes
+              upvotes,
+              downvotes
             };
           }
           return p;
@@ -119,6 +121,23 @@ const ProfilePage: React.FC = () => {
           <div className="profile-bio">
             {profile.bio ? <p>{profile.bio}</p> : <p className="text-muted">This user hasn't set a bio yet.</p>}
           </div>
+
+          {profile.communityMemberships && profile.communityMemberships.length > 0 && (
+            <div className="profile-communities">
+              <h4>Joined Communities</h4>
+              <div className="communities-list">
+                {profile.communityMemberships.map((membership) => (
+                  <Link 
+                    key={membership.community.id} 
+                    to={`/c/${membership.community.name}`} 
+                    className="community-pill"
+                  >
+                    c/{membership.community.name}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

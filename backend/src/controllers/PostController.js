@@ -62,6 +62,13 @@ class PostController {
     } catch (err) { next(err); }
   }
 
+  async voteOnPoll(req, res, next) {
+    try {
+      const result = await VoteService.castPollVote(req.user.userId, req.params.id, req.params.optionId);
+      res.json({ data: result });
+    } catch (err) { next(err); }
+  }
+
   async acceptAnswer(req, res, next) {
     try {
       const post = await PostService.acceptAnswer(req.params.id, req.params.commentId, req.user.userId);

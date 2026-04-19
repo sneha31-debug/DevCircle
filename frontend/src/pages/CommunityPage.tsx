@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { FiUsers, FiInfo } from 'react-icons/fi';
 import api from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import PostCard, { type Post } from '../components/post/PostCard';
 import './CommunityPage.css';
 
@@ -14,6 +15,7 @@ interface Community {
 
 const CommunityPage: React.FC = () => {
   const { communityName } = useParams<{ communityName: string }>();
+  const { user } = useAuth();
   const [community, setCommunity] = useState<Community | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
@@ -24,18 +26,17 @@ const CommunityPage: React.FC = () => {
     const fetchCommunityData = async () => {
       setLoading(true);
       try {
-        // First get community details
         const commRes = await api.get(`/communities`);
-        // Dev notes: In a real app we'd have a specific GET /communities/:name
         const communities = Array.isArray(commRes.data) ? commRes.data : commRes.data?.data || [];
         const found = communities.find((c: any) => c.name === communityName);
         if (!found) throw new Error('Community not found');
         setCommunity(found);
+        
+        // Initial membership check
+        if (user && found.members) {
+          setIsMember(found.members.some((m: any) => m.userId === user.id));
+        }
 
-        // Then get posts for this community
-        // Our backend filter uses query params or we filter client-side if missing
-        // Typically: /posts?communityId=xyz
-        // For demonstration, we fetch feed and filter locally if a dedicated endpoint isn't wired perfectly
         const postsRes = await api.get(`/feed?strategy=recent`);
         const commPosts = postsRes.data.data.posts.filter((p: Post) => p.community.name === communityName);
         setPosts(commPosts);
@@ -48,16 +49,82 @@ const CommunityPage: React.FC = () => {
     };
 
     if (communityName) fetchCommunityData();
-  }, [communityName]);
+  }, [communityName, user]);
 
-  const handleJoinToggle = () => {
-    // Optimistic toggle interaction
-    setIsMember(!isMember);
-    if (community) {
+  const handleJoinToggle = async () => {
+    if (!community) return;
+    
+    // Check if the user is authenticated first
+    if (!user) {
+      alert("Please log in to join communities!");
+      return;
+    }
+
+    const prev = isMember;
+    setIsMember(!prev);
+    setCommunity({
+      ...community,
+      memberCount: prev ? community.memberCount - 1 : community.memberCount + 1
+    });
+
+    try {
+      if (prev) {
+        await api.delete(`/communities/${community.id}/leave`);
+      } else {
+        await api.post(`/communities/${community.id}/join`);
+      }
+    } catch (err: any) {
+      // Revert if API fails
+      setIsMember(prev);
       setCommunity({
         ...community,
-        memberCount: isMember ? community.memberCount - 1 : community.memberCount + 1
+        memberCount: prev ? community.memberCount + 1 : community.memberCount - 1
       });
+      alert(err.response?.data?.message || 'Failed to process request');
+    }
+  };
+
+  const handleVote = async (postId: string, type: 'UPVOTE' | 'DOWNVOTE') => {
+    try {
+      const response = await api.post(`/posts/${postId}/vote`, { value: type === 'UPVOTE' ? 1 : -1 });
+      const { upvotes, downvotes } = response.data.data;
+      setPosts((currentPosts) => 
+        currentPosts.map((p) => {
+          if (p.id === postId) {
+            return {
+               ...p,
+               upvotes,
+               downvotes
+            };
+          }
+          return p;
+        })
+      );
+    } catch (err: any) {
+      console.error('Vote failed', err);
+      alert(err.response?.data?.message || 'Must be logged in to vote');
+    }
+  };
+
+  const handlePollVote = async (postId: string, optionId: string) => {
+    try {
+      await api.post(`/posts/${postId}/poll/${optionId}/vote`);
+      setPosts((currentPosts) => 
+        currentPosts.map((p) => {
+          if (p.id === postId && p.pollOptions) {
+            return {
+              ...p,
+              pollOptions: p.pollOptions.map(opt => 
+                opt.id === optionId ? { ...opt, voteCount: opt.voteCount + 1 } : opt
+              )
+            };
+          }
+          return p;
+        })
+      );
+    } catch (err: any) {
+      console.error('Poll vote failed', err);
+      alert(err.response?.data?.message || 'Failed to vote on poll');
     }
   };
 
@@ -83,10 +150,10 @@ const CommunityPage: React.FC = () => {
         </div>
         <div className="community-actions">
           <button 
-            className={`btn ${isMember ? 'btn-secondary' : 'btn-primary'}`}
+            className={`btn ${isMember ? 'btn-secondary text-danger' : 'btn-primary'}`}
             onClick={handleJoinToggle}
           >
-            {isMember ? 'Joined' : 'Join Community'}
+            {isMember ? 'Leave Community' : 'Join Community'}
           </button>
         </div>
       </div>
@@ -103,7 +170,8 @@ const CommunityPage: React.FC = () => {
               <PostCard 
                 key={post.id} 
                 post={post} 
-                onVote={(postId) => console.log('Vote localized stub', postId)} 
+                onVote={handleVote} 
+                onPollVote={handlePollVote}
               />
             ))
           )}

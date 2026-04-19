@@ -4,7 +4,7 @@ const prisma = require('../config/db');
 class CommunityRepository {
   async findAll() {
     return prisma.community.findMany({
-      include: { moderator: { select: { id: true, username: true } }, _count: { select: { members: true, posts: true } } },
+      include: { moderator: { select: { id: true, username: true } }, members: { select: { userId: true } }, _count: { select: { members: true, posts: true } } },
       orderBy: { memberCount: 'desc' },
     });
   }
@@ -12,7 +12,7 @@ class CommunityRepository {
   async findById(id) {
     return prisma.community.findUnique({
       where: { id },
-      include: { moderator: { select: { id: true, username: true } }, _count: { select: { members: true, posts: true } } },
+      include: { moderator: { select: { id: true, username: true } }, members: { select: { userId: true } }, _count: { select: { members: true, posts: true } } },
     });
   }
 

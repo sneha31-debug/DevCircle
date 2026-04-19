@@ -1,16 +1,24 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FiSearch, FiBell, FiUser, FiLogOut, FiMenu } from 'react-icons/fi';
+import { FiSearch, FiBell, FiUser, FiLogOut, FiMenu, FiUsers } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
 import './Navbar.css';
 
 const Navbar: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState('');
 
   const handleLogout = () => {
     logout();
     navigate('/auth');
+  };
+
+  const handleSearchSubmit = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && searchQuery.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchQuery(''); // Clear the bar dynamically
+    }
   };
 
   return (
@@ -26,7 +34,13 @@ const Navbar: React.FC = () => {
         {/* Search */}
         <div className="navbar-search hidden-mobile">
           <FiSearch className="search-icon" />
-          <input type="text" placeholder="Search communities, posts..." />
+          <input 
+            type="text" 
+            placeholder="Search posts..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={handleSearchSubmit}
+          />
         </div>
 
         {/* Actions */}
@@ -50,6 +64,9 @@ const Navbar: React.FC = () => {
                   </div>
                   <Link to={`/u/${user.username}`} className="dropdown-item">
                     <FiUser /> Profile
+                  </Link>
+                  <Link to="/create-community" className="dropdown-item">
+                    <FiUsers /> Create Community
                   </Link>
                   <button onClick={handleLogout} className="dropdown-item text-danger">
                     <FiLogOut /> Logout

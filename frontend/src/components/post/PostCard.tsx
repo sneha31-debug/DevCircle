@@ -34,9 +34,10 @@ export interface Post {
 interface PostCardProps {
   post: Post;
   onVote: (postId: string, type: 'UPVOTE' | 'DOWNVOTE') => void;
+  onPollVote?: (postId: string, optionId: string) => void;
 }
 
-const PostCard: React.FC<PostCardProps> = ({ post, onVote }) => {
+const PostCard: React.FC<PostCardProps> = ({ post, onVote, onPollVote }) => {
   const score = post.upvotes - post.downvotes;
 
   const renderBadge = () => {
@@ -60,7 +61,11 @@ const PostCard: React.FC<PostCardProps> = ({ post, onVote }) => {
           {post.pollOptions.map((opt) => {
             const percentage = totalVotes > 0 ? Math.round((opt.voteCount / totalVotes) * 100) : 0;
             return (
-              <div key={opt.id} className="poll-option-bar">
+              <div 
+                key={opt.id} 
+                className={`poll-option-bar ${onPollVote ? 'interactive' : ''}`}
+                onClick={() => onPollVote && onPollVote(post.id, opt.id)}
+              >
                 <div className="poll-option-fill" style={{ width: `${percentage}%` }}></div>
                 <span className="poll-option-text">{opt.optionText}</span>
                 <span className="poll-option-percent">{percentage}%</span>
@@ -122,7 +127,31 @@ const PostCard: React.FC<PostCardProps> = ({ post, onVote }) => {
           <Link to={`/post/${post.id}`} className="action-btn">
             <FiMessageSquare /> {post._count.comments} Comments
           </Link>
-          <button className="action-btn">
+          <button 
+            className="action-btn"
+            onClick={async (e) => {
+              e.preventDefault();
+              const url = `${window.location.origin}/post/${post.id}`;
+              const shareData = {
+                title: post.title,
+                text: `Check out this post on DevCircle: ${post.title}`,
+                url: url
+              };
+              
+              if (navigator.share) {
+                try {
+                  await navigator.share(shareData);
+                } catch (err) {
+                  console.error('Native sharing failed or was cancelled.', err);
+                }
+              } else {
+                // Fallback for browsers (like desktop Chrome sometimes) that don't support native sharing
+                navigator.clipboard.writeText(url)
+                  .then(() => alert('Post link copied to clipboard!'))
+                  .catch(err => console.error('Failed to copy', err));
+              }
+            }}
+          >
             <FiShare2 /> Share
           </button>
         </div>

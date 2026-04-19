@@ -204,3 +204,11 @@
   color: var(--text-primary);
   text-decoration: none;
 }
+.poll-option-bar.interactive {
+  cursor: pointer;
+  transition: transform 0.2s, border-color 0.2s;
+}
+.poll-option-bar.interactive:hover {
+  transform: translateX(4px);
+  border-color: var(--primary);
+}

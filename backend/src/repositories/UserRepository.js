@@ -13,7 +13,14 @@ class UserRepository {
   }
 
   async findByUsername(username) {
-    return prisma.user.findUnique({ where: { username } });
+    return prisma.user.findUnique({ 
+      where: { username },
+      include: {
+        communityMemberships: {
+          include: { community: true }
+        }
+      }
+    });
   }
 
   async save(data) {

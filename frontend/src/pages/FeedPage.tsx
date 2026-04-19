@@ -32,16 +32,17 @@ const FeedPage: React.FC = () => {
 
   const handleVote = async (postId: string, type: 'UPVOTE' | 'DOWNVOTE') => {
     try {
-      await api.post(`/posts/${postId}/vote`, { type });
+      const response = await api.post(`/posts/${postId}/vote`, { value: type === 'UPVOTE' ? 1 : -1 });
+      const { upvotes, downvotes } = response.data.data;
       
-      // Optimistic update locally
+      // Update with the mathematically verified data from the database
       setPosts((currentPosts) => 
         currentPosts.map((p) => {
           if (p.id === postId) {
             return {
               ...p,
-              upvotes: type === 'UPVOTE' ? p.upvotes + 1 : p.upvotes,
-              downvotes: type === 'DOWNVOTE' ? p.downvotes + 1 : p.downvotes
+              upvotes,
+              downvotes
             };
           }
           return p;
@@ -51,6 +52,30 @@ const FeedPage: React.FC = () => {
       console.error('Vote failed', err);
       // In a real app we'd trigger a toast notification here
       alert(err.response?.data?.message || 'Must be logged in to vote');
+    }
+  };
+
+  const handlePollVote = async (postId: string, optionId: string) => {
+    try {
+      await api.post(`/posts/${postId}/poll/${optionId}/vote`);
+      
+      // Optimistic update locally
+      setPosts((currentPosts) => 
+        currentPosts.map((p) => {
+          if (p.id === postId && p.pollOptions) {
+            return {
+              ...p,
+              pollOptions: p.pollOptions.map(opt => 
+                opt.id === optionId ? { ...opt, voteCount: opt.voteCount + 1 } : opt
+              )
+            };
+          }
+          return p;
+        })
+      );
+    } catch (err: any) {
+      console.error('Poll vote failed', err);
+      alert(err.response?.data?.message || 'Failed to vote on poll');
     }
   };
 
@@ -100,7 +125,7 @@ const FeedPage: React.FC = () => {
               </div>
             ) : (
               posts.map((post) => (
-                <PostCard key={post.id} post={post} onVote={handleVote} />
+                <PostCard key={post.id} post={post} onVote={handleVote} onPollVote={handlePollVote} />
               ))
             )}
           </div>

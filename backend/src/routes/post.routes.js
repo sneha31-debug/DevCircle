@@ -16,6 +16,7 @@ router.put('/:id',                         authenticate, PostController.update.b
 router.delete('/:id',                      authenticate, PostController.delete.bind(PostController));
 router.post('/:id/comments',              authenticate, PostController.addComment.bind(PostController));
 router.post('/:id/vote',                  authenticate, PostController.voteOnPost.bind(PostController));
+router.post('/:id/poll/:optionId/vote',   authenticate, PostController.voteOnPoll.bind(PostController));
 router.patch('/:id/accept/:commentId',    authenticate, PostController.acceptAnswer.bind(PostController));
 
 module.exports = router;
