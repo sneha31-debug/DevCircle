@@ -15,10 +15,15 @@ const feedRoutes         = require('./routes/feed.routes');
 const adminRoutes        = require('./routes/admin.routes');
 const tagRoutes          = require('./routes/tag.routes');
 
+const userRoutes         = require('./routes/user.routes');
+
 const app = express();
 
 // ─── Middleware ──────────────────────────────────────────────────────────────
-app.use(cors());
+app.use(cors({
+  origin: ['http://localhost:3000', 'http://localhost:5173', 'http://127.0.0.1:5173'],
+  credentials: true,
+}));
 app.use(express.json());
 
 // ─── Health check ────────────────────────────────────────────────────────────
@@ -26,6 +31,7 @@ app.get('/api/health', (req, res) => res.json({ status: 'ok', timestamp: new Dat
 
 // ─── API Routes ──────────────────────────────────────────────────────────────
 app.use('/api/auth',          authRoutes);
+app.use('/api/users',         userRoutes);
 app.use('/api/posts',         postRoutes);
 app.use('/api/comments',      commentRoutes);
 app.use('/api/communities',   communityRoutes);

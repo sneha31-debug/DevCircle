@@ -9,7 +9,7 @@ class FeedController {
         { type, communityId, tagName: tag },
         strategy
       );
-      res.json(posts);
+      res.json({ data: { posts } });
     } catch (err) { next(err); }
   }
 }

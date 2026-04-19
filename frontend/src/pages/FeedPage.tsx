@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import api from '../../services/api';
-import PostCard, { Post } from '../../components/post/PostCard';
+import { Link } from 'react-router-dom';
+import api from '../services/api';
+import PostCard, { type Post } from '../components/post/PostCard';
 import { FiTrendingUp, FiClock, FiStar } from 'react-icons/fi';
 import './FeedPage.css';
 
@@ -111,9 +112,9 @@ const FeedPage: React.FC = () => {
           <div className="sidebar-card glass-panel">
             <h3>DevCircle</h3>
             <p>Your portal for developer discussions, questions, and polls. Build your reputation securely.</p>
-            <button className="btn btn-primary" style={{ width: '100%', marginTop: '1rem' }}>
+            <Link to="/submit" className="btn btn-primary" style={{ display: 'block', width: '100%', marginTop: '1rem', textAlign: 'center' }}>
               Create Post
-            </button>
+            </Link>
           </div>
           
           <div className="sidebar-card glass-panel" style={{ marginTop: '1rem' }}>

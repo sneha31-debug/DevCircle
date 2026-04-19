@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { FiArrowUp, FiArrowDown, FiMessageSquare, FiCornerDownRight } from 'react-icons/fi';
 import { format } from 'timeago.js';
-import api from '../../services/api';
-import { Post } from '../../components/post/PostCard';
+import api from '../services/api';
+import type { Post } from '../components/post/PostCard';
 import './PostDetailPage.css';
 
 interface Comment {

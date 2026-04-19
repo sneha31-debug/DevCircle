@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { FiUsers, FiInfo } from 'react-icons/fi';
-import api from '../../services/api';
-import PostCard, { Post } from '../../components/post/PostCard';
+import api from '../services/api';
+import PostCard, { type Post } from '../components/post/PostCard';
 import './CommunityPage.css';
 
 interface Community {
@@ -27,8 +27,8 @@ const CommunityPage: React.FC = () => {
         // First get community details
         const commRes = await api.get(`/communities`);
         // Dev notes: In a real app we'd have a specific GET /communities/:name
-        // Mapping from existing backend routes which returns an array 
-        const found = commRes.data.data.communities.find((c: any) => c.name === communityName);
+        const communities = Array.isArray(commRes.data) ? commRes.data : commRes.data?.data || [];
+        const found = communities.find((c: any) => c.name === communityName);
         if (!found) throw new Error('Community not found');
         setCommunity(found);
 

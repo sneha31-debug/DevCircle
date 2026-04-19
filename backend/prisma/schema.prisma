@@ -6,35 +6,13 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
 
 // ─── Enums ────────────────────────────────────────────────────────────────────
 
-enum Role {
-  MEMBER
-  MODERATOR
-  ADMIN
-}
-
-enum PostType {
-  QUESTION
-  ARTICLE
-  POLL
-}
-
-enum NotificationType {
-  NEW_COMMENT
-  NEW_VOTE
-  MENTION
-  ANSWER_ACCEPTED
-}
-
-enum VoteTargetType {
-  POST
-  COMMENT
-}
+// Removed Enums for SQLite compatibility
 
 // ─── Models ───────────────────────────────────────────────────────────────────
 
@@ -46,7 +24,7 @@ model User {
   bio             String?
   avatarUrl       String?
   reputationScore Int       @default(0)
-  role            Role      @default(MEMBER)
+  role            String    @default("MEMBER") // Replaced enum Role
   isBanned        Boolean   @default(false)
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
@@ -96,7 +74,7 @@ model Post {
   id                String    @id @default(uuid())
   title             String
   body              String
-  type              PostType
+  type              String // Replaced enum PostType
   authorId          String
   communityId       String
   upvotes           Int       @default(0)
@@ -193,7 +171,7 @@ model Vote {
   id         String         @id @default(uuid())
   voterId    String
   targetId   String
-  targetType VoteTargetType
+  targetType String // Replaced enum VoteTargetType
   value      Int            // 1 or -1
   postId     String?
   commentId  String?
@@ -210,7 +188,7 @@ model Vote {
 model Notification {
   id          String           @id @default(uuid())
   recipientId String
-  type        NotificationType
+  type        String // Replaced enum NotificationType
   message     String
   referenceId String?
   isRead      Boolean          @default(false)
@@ -228,7 +206,7 @@ model AuditLog {
   action     String
   targetType String
   targetId   String
-  metadata   Json?
+  metadata   String?
   createdAt  DateTime @default(now())
 
   actor      User @relation(fields: [actorId], references: [id])

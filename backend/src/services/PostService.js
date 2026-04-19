@@ -7,7 +7,12 @@ class PostService {
   async create(authorId, { title, body, type, communityId, tags = [], pollOptions = [], expiresAt }) {
     // Build via Factory — validates type and creates correct subclass
     const postInstance = PostFactory.create(type, { title, body, type, authorId, communityId, expiresAt });
-    postInstance.validate();
+    try {
+      postInstance.validate();
+    } catch (err) {
+      err.status = 400;
+      throw err;
+    }
 
     const readTimeMinutes = type === 'ARTICLE' ? postInstance.readTimeMinutes : undefined;
 

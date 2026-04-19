@@ -7,6 +7,8 @@ import FeedPage from './pages/FeedPage';
 import AuthPage from './pages/AuthPage';
 import PostDetailPage from './pages/PostDetailPage';
 import CommunityPage from './pages/CommunityPage';
+import ProfilePage from './pages/ProfilePage';
+import CreatePostPage from './pages/CreatePostPage';
 
 function App() {
   return (
@@ -22,6 +24,8 @@ function App() {
               <Route path="/auth" element={<AuthPage />} />
               <Route path="/post/:id" element={<PostDetailPage />} />
               <Route path="/c/:communityName" element={<CommunityPage />} />
+              <Route path="/u/:username" element={<ProfilePage />} />
+              <Route path="/submit" element={<CreatePostPage />} />
               {/* Fallback */}
               <Route path="*" element={<div className="container animate-fade-in" style={{marginTop: '80px'}}><h2>404 Not Found</h2></div>} />
             </Routes>

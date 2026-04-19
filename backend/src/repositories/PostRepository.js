@@ -23,10 +23,11 @@ class PostRepository {
     });
   }
 
-  async findAll({ skip = 0, take = 20, type, communityId, tagName } = {}) {
+  async findAll({ skip = 0, take = 20, type, communityId, tagName, authorId } = {}) {
     const where = {};
     if (type) where.type = type;
     if (communityId) where.communityId = communityId;
+    if (authorId) where.authorId = authorId;
     if (tagName) where.tags = { some: { tag: { name: tagName } } };
 
     return prisma.post.findMany({ where, include: POST_INCLUDE, skip, take });
@@ -70,8 +71,8 @@ class PostRepository {
     return prisma.post.findMany({
       where: {
         OR: [
-          { title: { contains: query, mode: 'insensitive' } },
-          { body: { contains: query, mode: 'insensitive' } },
+          { title: { contains: query } },
+          { body: { contains: query } },
         ],
       },
       include: POST_INCLUDE,
