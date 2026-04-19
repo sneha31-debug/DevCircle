@@ -22,16 +22,17 @@ const app = express();
 // ─── Middleware ──────────────────────────────────────────────────────────────
 app.use(cors({
   origin: (origin, callback) => {
-    const allowed = [
-      'http://localhost:3000',
-      'http://localhost:5173',
-      'http://127.0.0.1:5173',
-      process.env.CORS_ORIGIN,  // Set this to your Vercel URL on Railway
-    ].filter(Boolean);
-    if (!origin || allowed.includes(origin)) {
+    // Allow requests with no origin (e.g. curl, Postman)
+    if (!origin) return callback(null, true);
+
+    const isLocalhost = origin.startsWith('http://localhost') || origin.startsWith('http://127.0.0.1');
+    const isVercel = origin.endsWith('.vercel.app');
+    const isAllowedEnv = process.env.CORS_ORIGIN && process.env.CORS_ORIGIN.split(',').map(s => s.trim()).includes(origin);
+
+    if (isLocalhost || isVercel || isAllowedEnv) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      callback(new Error(`CORS: origin ${origin} not allowed`));
     }
   },
   credentials: true,
