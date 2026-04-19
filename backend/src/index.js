@@ -21,7 +21,19 @@ const app = express();
 
 // ─── Middleware ──────────────────────────────────────────────────────────────
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://localhost:5173', 'http://127.0.0.1:5173'],
+  origin: (origin, callback) => {
+    const allowed = [
+      'http://localhost:3000',
+      'http://localhost:5173',
+      'http://127.0.0.1:5173',
+      process.env.CORS_ORIGIN,  // Set this to your Vercel URL on Railway
+    ].filter(Boolean);
+    if (!origin || allowed.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
 }));
 app.use(express.json());
