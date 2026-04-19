@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { FiArrowUp, FiArrowDown, FiMessageSquare, FiCornerDownRight } from 'react-icons/fi';
+import { FiArrowUp, FiArrowDown, FiMessageSquare } from 'react-icons/fi';
 import { format } from 'timeago.js';
 import api from '../services/api';
 import type { Post } from '../components/post/PostCard';
